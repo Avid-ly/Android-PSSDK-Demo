@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.aly.sdk.ALYAnalysis;
 import com.ps.sdk.PSSDK;
+import com.ps.sdk.callback.LoadPrivacyDialogCallBack;
 import com.ps.sdk.callback.PrivacyDataCallBack;
 import com.ps.sdk.callback.PrivacyInfoStatusCallBack;
 import com.ps.sdk.callback.PrivacySendCallBack;
@@ -32,9 +33,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PrivacySendCallBack {
     public static final String TAG = "pssdk";
-    private TextView mTvContent,mTvToken;
+    private TextView mTvContent, mTvToken;
 
 
     static final String sPdtId = "600167";
@@ -48,27 +49,43 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mTvContent = findViewById(R.id.tv_content);
-        mTvToken=findViewById(R.id.tv_token);
-        btnShowDialog=findViewById(R.id.btn_showdialog);
+        mTvToken = findViewById(R.id.tv_token);
+        btnShowDialog = findViewById(R.id.btn_showdialog);
         btnShowDialog.setVisibility(View.GONE);
         initAlySDK();
+        initPssdk();
+    }
+
+    private void initPssdk() {
+        PSSDK.init(this, sPdtId, sGamerId);
     }
 
 
     private void requestPrivacyData() {
-        PSSDK.requestPrivacyData(this, sPdtId, sGamerId, new PrivacyDataCallBack() {
+        PSSDK.requestPrivacyData(new PrivacyDataCallBack() {
             @Override
             public void onSuccess(String privacy, boolean ignore, int type, boolean accepted) {
-                privacyName=privacy;
-                if (!TextUtils.isEmpty(privacy)){
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            btnShowDialog.setVisibility(View.VISIBLE);
-                        }
-                    });
-                }
+                privacyName = privacy;
+
                 toast("onSuccess: " + privacy + " ignore: " + ignore + " type:" + type + " accepted :" + accepted);
+                PSSDK.loadPrivacyDialog(new LoadPrivacyDialogCallBack() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                btnShowDialog.setVisibility(View.VISIBLE);
+                            }
+                        });
+                        toast("loadPrivacyDialog onSuccess: ");
+                    }
+
+                    @Override
+                    public void onFail(String s) {
+                        toast("loadPrivacyDialog onFail reason" + s);
+                    }
+                });
+
             }
 
             @Override
@@ -80,24 +97,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showPrivacyDialog() {
-        PSSDK.showPrivacyDialog(MainActivity.this, sPdtId, privacyName, new PrivacyInfoStatusCallBack() {
+        PSSDK.showPrivacyDialog(new PrivacyInfoStatusCallBack() {
             @Override
             public void onAccessPrivacyInfoAccepted() {
                 toast("onAccessPrivacyInfoAccepted");
-                PSSDK.updateAccessPrivacyInfoStatus(MainActivity.this,sPdtId,sGamerId, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusAccepted,privacyName,null);
+                PSSDK.updateAccessPrivacyInfoStatus(privacyName, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusAccepted, MainActivity.this);
             }
 
             @Override
             public void onAccessPrivacyInfoDefined() {
                 toast("onAccessPrivacyInfoDefined");
-                PSSDK.updateAccessPrivacyInfoStatus(MainActivity.this,sPdtId,sGamerId, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusDefined,privacyName,null);
+                PSSDK.updateAccessPrivacyInfoStatus(privacyName, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusDenied, MainActivity.this);
 
             }
 
             @Override
             public void onAccessPrivacyInfoUnknown(String s) {
                 toast("onAccessPrivacyInfoUnknown " + s);
-                PSSDK.updateAccessPrivacyInfoStatus(MainActivity.this,sPdtId,sGamerId, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusUnkown, privacyName,null);
+                PSSDK.updateAccessPrivacyInfoStatus(privacyName, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusUnkown, MainActivity.this);
 
             }
         });
@@ -111,14 +128,13 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mTvToken.setText("token :"+ALYAnalysis.getUserId()+" ptdid:"+sPdtId);
+                        mTvToken.setText("token :" + ALYAnalysis.getUserId() + " ptdid:" + sPdtId);
                     }
                 });
 
             }
-        },1*1000);
+        }, 1 * 1000);
     }
-
 
 
     public void getUserPrivacyData(View view) {
@@ -144,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                PSSDK.updateAccessPrivacyInfoStatus(MainActivity.this, sPdtId, sGamerId, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusAccepted, "gdpr", new PrivacySendCallBack() {
+                PSSDK.updateAccessPrivacyInfoStatus("gdpr", PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusAccepted, new PrivacySendCallBack() {
                     @Override
                     public void onSuccess() {
                         toast("updateUserPrivacyData onSuccess ");
@@ -169,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     private void fullScreen() {
         //隐藏标题栏
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -176,5 +193,15 @@ public class MainActivity extends AppCompatActivity {
         this.getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
+
+    @Override
+    public void onSuccess() {
+        toast("updateUserPrivacyData onSuccess ");
+    }
+
+    @Override
+    public void onFail(String errorMsg) {
+        toast("updateUserPrivacyData onFail " + errorMsg);
     }
 }
