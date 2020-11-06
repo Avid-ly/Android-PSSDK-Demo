@@ -21,6 +21,6 @@ android {
 
 dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.ps.sdk:pssdk:1.0.02.1'
+    implementation 'com.ps.sdk:pssdk:1.0.03.1'
     implementation 'com.aly.sdk:analysissdk:4.0.0.6'
 }
