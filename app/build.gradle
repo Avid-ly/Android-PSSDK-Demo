@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
     buildToolsVersion "28.0.3"
     defaultConfig {
-        applicationId "com.ps.sdk.demo"
+        applicationId "com.riseofempress.android"
         minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
@@ -18,9 +18,19 @@ android {
         }
     }
 }
-
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+    maven{
+        url "http://bx-mvn.dataverse.cn:18081/repository/maven-releases/"
+    }
+}
 dependencies {
+
     implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.ps.sdk:pssdk:1.0.03.1'
-    implementation 'com.aly.sdk:analysissdk:4.0.0.6'
+
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.ps.sdk:pssdk:2.0.0.1'
+    implementation 'com.aly.sdk:tasdk:4.1.0.5'
 }

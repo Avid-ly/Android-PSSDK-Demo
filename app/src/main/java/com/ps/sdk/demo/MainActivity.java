@@ -3,9 +3,7 @@ package com.ps.sdk.demo;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
-import android.text.TextUtils;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -16,30 +14,20 @@ import android.widget.Toast;
 
 import com.aly.sdk.ALYAnalysis;
 import com.ps.sdk.PSSDK;
-import com.ps.sdk.callback.LoadPrivacyDialogCallBack;
-import com.ps.sdk.callback.PrivacyDataCallBack;
-import com.ps.sdk.callback.PrivacyInfoStatusCallBack;
+
 import com.ps.sdk.callback.PrivacySendCallBack;
+import com.ps.sdk.entity.PrivacyAuthorizationResult;
 import com.ps.sdk.privacy.PrivacyManager;
-
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import com.ps.sdk.tools.error.PrivacyAuthorizationException;
 
 
 public class MainActivity extends AppCompatActivity implements PrivacySendCallBack {
-    public static final String TAG = "pssdk";
+    public static final String TAG = "pssdk-demo";
     private TextView mTvContent, mTvToken;
 
 
-    static final String sPdtId = "600167";
-    static final String sGamerId = "001";
+    static final String sPdtId = "600215";
+    static final String sGamerId = "userid00002";
     String privacyName;
     private Button btnShowDialog;
 
@@ -50,85 +38,47 @@ public class MainActivity extends AppCompatActivity implements PrivacySendCallBa
         setContentView(R.layout.activity_main);
         mTvContent = findViewById(R.id.tv_content);
         mTvToken = findViewById(R.id.tv_token);
-        btnShowDialog = findViewById(R.id.btn_showdialog);
-        btnShowDialog.setVisibility(View.GONE);
+
         initAlySDK();
-        initPssdk();
+
+        PSSDK.setDebugable(true);
+        Pssdk();
     }
 
-    private void initPssdk() {
-        PSSDK.init(this, sPdtId, sGamerId);
-    }
+    private void Pssdk() {
 
-
-    private void requestPrivacyData() {
-        PSSDK.requestPrivacyData(new PrivacyDataCallBack() {
-            @Override
-            public void onSuccess(String privacy, boolean ignore, int type, boolean accepted) {
-                privacyName = privacy;
-
-                toast("onSuccess: " + privacy + " ignore: " + ignore + " type:" + type + " accepted :" + accepted);
-                PSSDK.loadPrivacyDialog(new LoadPrivacyDialogCallBack() {
+        PSSDK.requestPrivacyAuthorization(this, sPdtId, sGamerId,
+                new PSSDK.RequestPrivacyAuthorizationCallBack() {
                     @Override
-                    public void onSuccess() {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                btnShowDialog.setVisibility(View.VISIBLE);
-                            }
-                        });
-                        toast("loadPrivacyDialog onSuccess: ");
+                    public void onRequestSuccess(PrivacyAuthorizationResult result) {
+                        //authorizationStatus  0 未请求过授权  1 请求过授权
+                        //collectionStatus     0 未知         1 不同意收集  2 同意收集
+                        //shareStatus          0 未知         1 不同意分享  2 同意分享
+                        Log.i(TAG, "onRequestSuccess: " + result.toString());
+                        mTvContent.setText(result.toString());
                     }
 
                     @Override
-                    public void onFail(String s) {
-                        toast("loadPrivacyDialog onFail reason" + s);
+                    public void onRequestFail(PrivacyAuthorizationException e) {
+                        Log.i(TAG, "onRequestFail: " + e.getErrorMessage());
+                        mTvContent.setText(e.getErrorCode() + "\n"+e.getErrorMessage());
                     }
                 });
-
-            }
-
-            @Override
-            public void onFail(String s) {
-                toast("onFail :" + s);
-            }
-        });
-
     }
 
-    private void showPrivacyDialog() {
-        PSSDK.showPrivacyDialog(new PrivacyInfoStatusCallBack() {
-            @Override
-            public void onAccessPrivacyInfoAccepted() {
-                toast("onAccessPrivacyInfoAccepted");
-                PSSDK.updateAccessPrivacyInfoStatus(privacyName, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusAccepted, MainActivity.this);
-            }
 
-            @Override
-            public void onAccessPrivacyInfoDefined() {
-                toast("onAccessPrivacyInfoDefined");
-                PSSDK.updateAccessPrivacyInfoStatus(privacyName, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusDenied, MainActivity.this);
 
-            }
 
-            @Override
-            public void onAccessPrivacyInfoUnknown(String s) {
-                toast("onAccessPrivacyInfoUnknown " + s);
-                PSSDK.updateAccessPrivacyInfoStatus(privacyName, PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusUnkown, MainActivity.this);
-
-            }
-        });
-    }
 
     private void initAlySDK() {
-        ALYAnalysis.init(this, sPdtId, "32401");
+        ALYAnalysis.init(this, sPdtId,"32408");
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mTvToken.setText("token :" + ALYAnalysis.getUserId() + " ptdid:" + sPdtId);
+                        mTvToken.setText("token :" + ALYAnalysis.getUserId() + "\nptdid:" + sPdtId);
                     }
                 });
 
@@ -137,43 +87,7 @@ public class MainActivity extends AppCompatActivity implements PrivacySendCallBa
     }
 
 
-    public void getUserPrivacyData(View view) {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        requestPrivacyData();
-                    }
-                });
 
-            }
-        }, 1 * 1000);
-    }
-
-    public void showDialog(View view) {
-        showPrivacyDialog();
-    }
-
-    public void updateUserPrivacyData(View view) {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                PSSDK.updateAccessPrivacyInfoStatus("gdpr", PrivacyManager.PrivacyInfoStatusEnum.PrivacyInfoStatusAccepted, new PrivacySendCallBack() {
-                    @Override
-                    public void onSuccess() {
-                        toast("updateUserPrivacyData onSuccess ");
-                    }
-
-                    @Override
-                    public void onFail(String s) {
-                        toast("updateUserPrivacyData onFail " + s);
-                    }
-                });
-            }
-        }, 1 * 1000);
-    }
 
     private void toast(final String content) {
         runOnUiThread(new Runnable() {

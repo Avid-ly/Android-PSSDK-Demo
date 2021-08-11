@@ -9,37 +9,20 @@
 
     <TextView
         android:id="@+id/tv_content"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_width="match_parent"
+        android:layout_height="300px"
+        android:text="Hello World!"
+        android:padding="50px"
+        />
 
     <TextView
         android:id="@+id/tv_token"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
-
-
-    <Button
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="getUserPrivacyData"
-        android:onClick="getUserPrivacyData"
-        ></Button>
+        android:layout_height="300px"
+        android:text="Hello World!"
+        android:padding="50px"
+        />
 
-    <Button
-        android:id="@+id/btn_showdialog"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="showDialog"
-        android:onClick="showDialog"
-        ></Button>
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="updateUserPrivacyData"
-        android:onClick="updateUserPrivacyData"
-        ></Button>
 
 </LinearLayout>
