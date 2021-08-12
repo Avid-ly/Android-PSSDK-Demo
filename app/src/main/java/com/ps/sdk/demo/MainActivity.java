@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements PrivacySendCallBa
 
 
     private void initAlySDK() {
-        ALYAnalysis.init(this, sPdtId,"32408");
+        ALYAnalysis.init(this, sPdtId,"your channelid");
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
