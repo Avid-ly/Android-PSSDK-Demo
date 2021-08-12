@@ -26,8 +26,8 @@ public class MainActivity extends AppCompatActivity implements PrivacySendCallBa
     private TextView mTvContent, mTvToken;
 
 
-    static final String sPdtId = "600215";
-    static final String sGamerId = "userid00002";
+    static final String sPdtId = "your pid";
+    static final String sGamerId = "your gameid";
     String privacyName;
     private Button btnShowDialog;
 
