@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     buildToolsVersion "28.0.3"
     defaultConfig {
         applicationId "com.riseofempress.android"
         minSdkVersion 19
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -23,14 +23,12 @@ repositories {
         dirs 'libs'
     }
     maven{
-        url "http://bx-mvn.dataverse.cn:18081/repository/maven-releases/"
+        url "https://mvn-bx.dataverse.cn/repository/maven-releases/"
     }
 }
 dependencies {
 
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.ps.sdk:pssdk:2.0.0.1'
-    implementation 'com.aly.sdk:tasdk:4.1.0.5'
+    implementation 'com.aly.sdk:tasdk:4.1.0.7'
 }

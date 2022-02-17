@@ -45,8 +45,8 @@ public class MainActivity extends AppCompatActivity implements PrivacySendCallBa
         Pssdk();
     }
 
-    private void Pssdk() {
-
+    private void Pssdk(){
+        Log.d(TAG, "pid: "+sPdtId + " gid : " + sGamerId);
         PSSDK.requestPrivacyAuthorization(this, sPdtId, sGamerId,
                 new PSSDK.RequestPrivacyAuthorizationCallBack() {
                     @Override
