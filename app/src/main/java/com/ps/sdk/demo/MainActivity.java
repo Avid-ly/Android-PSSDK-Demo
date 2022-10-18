@@ -3,7 +3,9 @@ package com.ps.sdk.demo;
 
 import android.os.Bundle;
 import android.os.Handler;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -15,6 +17,8 @@ import android.widget.Toast;
 import com.aly.sdk.ALYAnalysis;
 import com.ps.sdk.PSSDK;
 
+import com.ps.sdk.PrivacyCollectionStatus;
+import com.ps.sdk.PrivacyShareStatus;
 import com.ps.sdk.callback.PrivacySendCallBack;
 import com.ps.sdk.entity.PrivacyAuthorizationResult;
 import com.ps.sdk.privacy.PrivacyManager;
@@ -24,13 +28,9 @@ import com.ps.sdk.tools.error.PrivacyAuthorizationException;
 public class MainActivity extends AppCompatActivity implements PrivacySendCallBack {
     public static final String TAG = "pssdk-demo";
     private TextView mTvContent, mTvToken;
-
-
-    static final String sPdtId = "your pid";
+    static final String sPdtId = "your productid";
     static final String sGamerId = "your gameid";
-    String privacyName;
-    private Button btnShowDialog;
-
+    static final String sChannelId = "your channelId";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         fullScreen();
@@ -38,15 +38,12 @@ public class MainActivity extends AppCompatActivity implements PrivacySendCallBa
         setContentView(R.layout.activity_main);
         mTvContent = findViewById(R.id.tv_content);
         mTvToken = findViewById(R.id.tv_token);
-
-        initAlySDK();
-
         PSSDK.setDebugable(true);
         Pssdk();
     }
 
-    private void Pssdk(){
-        Log.d(TAG, "pid: "+sPdtId + " gid : " + sGamerId);
+    private void Pssdk() {
+        Log.d(TAG, "pid: " + sPdtId + " gid : " + sGamerId);
         PSSDK.requestPrivacyAuthorization(this, sPdtId, sGamerId,
                 new PSSDK.RequestPrivacyAuthorizationCallBack() {
                     @Override
@@ -55,23 +52,23 @@ public class MainActivity extends AppCompatActivity implements PrivacySendCallBa
                         //collectionStatus     0 未知         1 不同意收集  2 同意收集
                         //shareStatus          0 未知         1 不同意分享  2 同意分享
                         Log.i(TAG, "onRequestSuccess: " + result.toString());
+                        if (result.getCollectionStatus() == PrivacyCollectionStatus.PrivacyCollectionStatusDenied) {
+                            ALYAnalysis.disableAccessPrivacyInformation();
+                        }
+                        initAlySDK();
                         mTvContent.setText(result.toString());
                     }
 
                     @Override
                     public void onRequestFail(PrivacyAuthorizationException e) {
                         Log.i(TAG, "onRequestFail: " + e.getErrorMessage());
-                        mTvContent.setText(e.getErrorCode() + "\n"+e.getErrorMessage());
+                        mTvContent.setText(e.getErrorCode() + "\n" + e.getErrorMessage());
                     }
                 });
     }
 
-
-
-
-
     private void initAlySDK() {
-        ALYAnalysis.init(this, sPdtId,"your channelid");
+        ALYAnalysis.init(this, sPdtId, sChannelId);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -85,9 +82,6 @@ public class MainActivity extends AppCompatActivity implements PrivacySendCallBa
             }
         }, 1 * 1000);
     }
-
-
-
 
     private void toast(final String content) {
         runOnUiThread(new Runnable() {
